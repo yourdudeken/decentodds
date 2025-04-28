@@ -1,22 +1,32 @@
-import React from 'react';
+//import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BarChart2, Wallet, Gift, User, Settings, HelpCircle } from 'lucide-react';
+import { Home, BarChart2, Gift, User, Settings, HelpCircle, X } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
+  onClose?: () => void;
 }
 
-const Sidebar = ({ isOpen }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   
   const isActive = (path: string) => location.pathname === path;
   
   return (
     <aside 
-      className={`fixed inset-y-0 left-0 z-40 w-64 pt-16 bg-dark-900/95 backdrop-blur-md border-r border-dark-700 transition-transform duration-300 transform md:transform-none md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 pt-16 bg-dark-900/95 backdrop-blur-md border-r border-dark-700 transition-transform duration-300 transform ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
+      {onClose && (
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-dark-800 transition-colors text-gray-400 hover:text-white"
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
+      )}
       <div className="h-full flex flex-col justify-between py-6 px-4">
         <nav className="flex-1 px-2 space-y-1">
           <Link

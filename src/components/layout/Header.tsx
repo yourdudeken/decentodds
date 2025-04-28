@@ -1,6 +1,6 @@
-import React from 'react';
+//import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ArrowRightCircle, ChevronDown } from 'lucide-react';
+import { Menu,/* X, ArrowRightCircle,*/ ChevronDown } from 'lucide-react';
 import { useWallet } from '../../context/WalletContext';
 import WalletButton from '../ui/WalletButton';
 import TokenDisplay from '../ui/TokenDisplay';
@@ -18,7 +18,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
-          className="mr-4 p-2 rounded-lg hover:bg-dark-800 transition-colors md:hidden"
+          className="mr-4 p-2 rounded-lg hover:bg-dark-800 transition-colors"
           aria-label="Toggle menu"
         >
           <Menu size={20} />

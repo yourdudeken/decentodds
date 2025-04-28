@@ -1,4 +1,4 @@
-import React from 'react';
+//import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { WalletProvider } from './context/WalletContext';
 import { PredictionProvider } from './context/PredictionContext';
