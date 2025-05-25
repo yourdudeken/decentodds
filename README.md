@@ -56,6 +56,7 @@ Total claimable: **300 DODDS**
 ## Deployment (Docker)
 
 ```bash
-git clone https://github.com/your-username/decentodds.git
+git clone https://github.com/yourdudeken/decentodds.git
 cd decentodds
-docker-compose up -d
+npm i
+npm run dev
