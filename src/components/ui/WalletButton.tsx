@@ -1,69 +1,108 @@
 import React, { useState } from 'react';
-import { Wallet, LogOut, ChevronDown } from 'lucide-react';
+import { Wallet, LogOut } from 'lucide-react';
 import { useWallet } from '../../context/WalletContext';
 import Button from './Button';
 
-const WalletButton = () => {
-  const { isConnected, address, connectWallet, disconnectWallet } = useWallet();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
-  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-  const closeDropdown = () => setIsDropdownOpen(false);
+declare global {
+  interface Window {
+    ethereum?: any;
+    solana?: {
+      isPhantom?: boolean;
+      connect: () => Promise<{publicKey: {toString: () => string}}>;
+    };
+  }
+}
 
-  const formatAddress = (addr: string) => {
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+const WalletButton = () => {
+  const { 
+    isConnected, 
+    address, 
+    connectWallet, 
+    disconnectWallet,
+    loading,
+    error
+  } = useWallet();
+  const [showWalletList, setShowWalletList] = useState(false);
+
+  const supportedWallets = [
+    {
+      id: 'metamask',
+      name: 'MetaMask',
+      icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg'
+    },
+    {
+      id: 'phantom',
+      name: 'Phantom',
+      icon: 'https://phantom.app/favicon.ico'
+    }
+  ];
+
+  const handleConnect = async (walletType: string) => {
+    try {
+      let walletAddress = '';
+      if (walletType === 'metamask') {
+        if (!window.ethereum) throw new Error('MetaMask not installed');
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        walletAddress = accounts[0];
+      } else if (walletType === 'phantom') {
+        if (!window.solana?.isPhantom) throw new Error('Phantom not installed');
+        const response = await window.solana.connect();
+        walletAddress = response.publicKey.toString();
+      }
+
+      await connectWallet(walletType, walletAddress);
+      setShowWalletList(false);
+    } catch (err) {
+      console.error('Failed to connect wallet:', err);
+    }
   };
 
-  if (isConnected && address) {
+  if (loading) {
+    return <Button variant="primary" disabled>Connecting...</Button>;
+  }
+
+  if (isConnected) {
     return (
       <div className="relative">
         <Button
           variant="outline"
-          onClick={toggleDropdown}
-          rightIcon={<ChevronDown size={14} />}
-          className="border-dark-700 bg-dark-800/50 hover:bg-dark-700/70"
+          onClick={() => disconnectWallet()}
+          rightIcon={<LogOut size={14} />}
         >
-          <span className="flex items-center">
-            <span className="mr-2 h-2 w-2 rounded-full bg-success-500"></span>
-            {formatAddress(address)}
-          </span>
+          {`${address?.substring(0, 6)}...${address?.substring(38)}`}
         </Button>
-        
-        {isDropdownOpen && (
-          <>
-            <div 
-              className="fixed inset-0 z-10" 
-              onClick={closeDropdown}
-            ></div>
-            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-dark-800 border border-dark-700 overflow-hidden z-20 animate-fade-in">
-              <div className="py-1">
-                <button
-                  onClick={() => {
-                    disconnectWallet();
-                    closeDropdown();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-dark-200 hover:bg-dark-700 flex items-center"
-                >
-                  <LogOut size={16} className="mr-2 text-dark-400" />
-                  Disconnect Wallet
-                </button>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     );
   }
 
   return (
-    <div>
-      <Button 
+    <div className="relative">
+      <Button
         variant="primary"
-        onClick={() => connectWallet('metamask')}
+        onClick={() => setShowWalletList(!showWalletList)}
         leftIcon={<Wallet size={16} />}
       >
         Connect Wallet
       </Button>
+
+      {showWalletList && (
+        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-10">
+          {supportedWallets.map((wallet) => (
+            <button
+              key={wallet.id}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
+              onClick={() => handleConnect(wallet.id)}
+            >
+              <img 
+                src={wallet.icon} 
+                alt={wallet.name}
+                className="w-5 h-5 mr-2 rounded-full"
+              />
+              {wallet.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
